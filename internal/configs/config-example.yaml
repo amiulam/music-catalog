@@ -1,0 +1,6 @@
+service:
+  port: ":9876"
+  secretJWT: "yoursecret"
+
+database:
+  dataSourceName: "postgres://<username>:<password>@<host>:5432/music_catalog?sslmode=disable"
