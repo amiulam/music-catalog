@@ -24,7 +24,7 @@ func TestHandler_Login(t *testing.T) {
 		mockFn             func()
 		wantErr            bool
 		expectedStatusCode int
-		expoectedBody      memberships.LoginResponse
+		expectedBody       memberships.LoginResponse
 	}{
 		{
 			name: "success",
@@ -35,7 +35,7 @@ func TestHandler_Login(t *testing.T) {
 				}).Return("accessToken", nil)
 			},
 			expectedStatusCode: 200,
-			expoectedBody: memberships.LoginResponse{
+			expectedBody: memberships.LoginResponse{
 				AccessToken: "accessToken",
 			},
 			wantErr: false,
@@ -49,7 +49,7 @@ func TestHandler_Login(t *testing.T) {
 				}).Return("", assert.AnError)
 			},
 			expectedStatusCode: 400,
-			expoectedBody:      memberships.LoginResponse{},
+			expectedBody:       memberships.LoginResponse{},
 			wantErr:            true,
 		},
 	}
@@ -93,7 +93,7 @@ func TestHandler_Login(t *testing.T) {
 				err := json.Unmarshal(w.Body.Bytes(), &response)
 				assert.NoError(t, err)
 
-				assert.Equal(t, tt.expoectedBody, response)
+				assert.Equal(t, tt.expectedBody, response)
 			}
 		})
 	}
