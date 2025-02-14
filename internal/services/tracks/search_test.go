@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/amiulam/music-catalog/internal/models/spotify"
+	trackactivities "github.com/amiulam/music-catalog/internal/models/track_activities"
 	spotifyRepo "github.com/amiulam/music-catalog/internal/repository/spotify"
 	"github.com/stretchr/testify/assert"
 	gomock "go.uber.org/mock/gomock"
@@ -16,6 +17,10 @@ func Test_service_Search(t *testing.T) {
 	defer ctrlMock.Finish()
 
 	mockSpotifyOutbound := NewMockspotifyOutbound(ctrlMock)
+	mockTrackActivityRepo := NewMocktrackActivitesRepository(ctrlMock)
+
+	isLikedTrue := true
+	isLikedFalse := false
 
 	next := "https://api.spotify.com/v1/search?offset=10&limit=10&query=bohemian%20rhapsody&type=track&market=ID&locale=id-ID,id;q%3D0.7"
 
@@ -51,6 +56,7 @@ func Test_service_Search(t *testing.T) {
 						Explicit:          false,
 						ID:                "3z8h0TU7ReDPLIbEnYhWZb",
 						Name:              "Bohemian Rhapsody",
+						IsLiked:           &isLikedTrue,
 					},
 					{
 						AlbumType:         "compilation",
@@ -61,6 +67,7 @@ func Test_service_Search(t *testing.T) {
 						Explicit:          false,
 						ID:                "2OBofMJx94NryV2SK8p8Zf",
 						Name:              "Bohemian Rhapsody - Remastered 2011",
+						IsLiked:           &isLikedFalse,
 					},
 				},
 				Total: 904,
@@ -130,6 +137,15 @@ func Test_service_Search(t *testing.T) {
 						},
 					},
 				}, nil)
+
+				mockTrackActivityRepo.EXPECT().GetBulkSpotifyIDs(gomock.Any(), uint(1), []string{"3z8h0TU7ReDPLIbEnYhWZb", "2OBofMJx94NryV2SK8p8Zf"}).Return(map[string]trackactivities.TrackActivity{
+					"3z8h0TU7ReDPLIbEnYhWZb": {
+						IsLiked: &isLikedTrue,
+					},
+					"2OBofMJx94NryV2SK8p8Zf": {
+						IsLiked: &isLikedFalse,
+					},
+				}, nil)
 			},
 		},
 		{
@@ -151,9 +167,10 @@ func Test_service_Search(t *testing.T) {
 			tt.mockFn(tt.args)
 
 			s := &service{
-				spotifyOutbound: mockSpotifyOutbound,
+				spotifyOutbound:    mockSpotifyOutbound,
+				trackActivitesRepo: mockTrackActivityRepo,
 			}
-			got, err := s.Search(context.Background(), tt.args.query, tt.args.pageSize, tt.args.pageIndex)
+			got, err := s.Search(context.Background(), tt.args.query, tt.args.pageSize, tt.args.pageIndex, 1)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("service.Search() error = %v, wantErr %v", err, tt.wantErr)
 				return

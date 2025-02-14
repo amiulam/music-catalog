@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/amiulam/music-catalog/internal/models/spotify"
+	"github.com/amiulam/music-catalog/pkg/jwt"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
@@ -56,7 +57,7 @@ func TestHandler_Search(t *testing.T) {
 				Total: 904,
 			},
 			mockFn: func() {
-				mockService.EXPECT().Search(gomock.Any(), "bohemian rhapsody", 10, 1).Return(&spotify.SearchResponse{
+				mockService.EXPECT().Search(gomock.Any(), "bohemian rhapsody", 10, 1, uint(1)).Return(&spotify.SearchResponse{
 					Limit: 10,
 					Items: []spotify.SpotifyTrackObjects{
 						{
@@ -90,13 +91,12 @@ func TestHandler_Search(t *testing.T) {
 			expectedStatusCode: 400,
 			expectedBody:       spotify.SearchResponse{},
 			mockFn: func() {
-				mockService.EXPECT().Search(gomock.Any(), "bohemian rhapsody", 10, 1).Return(nil, assert.AnError)
+				mockService.EXPECT().Search(gomock.Any(), "bohemian rhapsody", 10, 1, uint(1)).Return(nil, assert.AnError)
 			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-
 			tt.mockFn()
 			api := gin.New()
 
@@ -111,6 +111,12 @@ func TestHandler_Search(t *testing.T) {
 
 			req, err := http.NewRequest(http.MethodGet, endpoint, nil)
 			assert.NoError(t, err)
+
+			token, err := jwt.CreateToken(1, "username", "")
+			assert.NoError(t, err)
+
+			req.Header.Set("Authorization", token)
+
 			h.ServeHTTP(w, req)
 
 			assert.Equal(t, tt.expectedStatusCode, w.Code)
