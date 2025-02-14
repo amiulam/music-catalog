@@ -8,6 +8,7 @@ import (
 	membershipHandler "github.com/amiulam/music-catalog/internal/handler/memberships"
 	trackHandler "github.com/amiulam/music-catalog/internal/handler/tracks"
 	"github.com/amiulam/music-catalog/internal/models/memberships"
+	trackactivites "github.com/amiulam/music-catalog/internal/models/track_activites"
 	membershipRepo "github.com/amiulam/music-catalog/internal/repository/memberships"
 	spotifyRepo "github.com/amiulam/music-catalog/internal/repository/spotify"
 	membershipSvc "github.com/amiulam/music-catalog/internal/services/memberships"
@@ -39,6 +40,7 @@ func main() {
 	db, err := internalsql.Connect(cfg.Database.DatabaseSourceName)
 
 	db.AutoMigrate(&memberships.User{})
+	db.AutoMigrate(&trackactivites.TrackActivity{})
 
 	r.Use(gin.Logger())
 	r.Use(gin.Recovery())

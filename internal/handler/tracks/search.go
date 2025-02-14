@@ -26,7 +26,7 @@ func (h *Handler) Search(c *gin.Context) {
 		pageIndex = 1
 	}
 
-	response, err := h.trackSvc.Search(ctx, query, pageSize, pageIndex)
+	response, err := h.trackSvc.Search(ctx, query, pageSize, pageIndex, 0)
 
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
