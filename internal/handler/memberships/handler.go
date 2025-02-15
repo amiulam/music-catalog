@@ -1,6 +1,7 @@
 package memberships
 
 import (
+	"github.com/amiulam/music-catalog/internal/middleware"
 	"github.com/amiulam/music-catalog/internal/models/memberships"
 	"github.com/gin-gonic/gin"
 )
@@ -28,4 +29,5 @@ func (h *Handler) RegisterRoute() {
 
 	route.POST("sign-up", h.SignUp)
 	route.POST("login", h.Login)
+	route.POST("logout", middleware.AuthMiddleware(), h.Logout)
 }
