@@ -42,6 +42,21 @@ func (m *MockspotifyOutbound) EXPECT() *MockspotifyOutboundMockRecorder {
 	return m.recorder
 }
 
+// GetRecommendation mocks base method.
+func (m *MockspotifyOutbound) GetRecommendation(ctx context.Context, limit int, trackID string) (*spotify.SpotifyRecommendationResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetRecommendation", ctx, limit, trackID)
+	ret0, _ := ret[0].(*spotify.SpotifyRecommendationResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetRecommendation indicates an expected call of GetRecommendation.
+func (mr *MockspotifyOutboundMockRecorder) GetRecommendation(ctx, limit, trackID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRecommendation", reflect.TypeOf((*MockspotifyOutbound)(nil).GetRecommendation), ctx, limit, trackID)
+}
+
 // Search mocks base method.
 func (m *MockspotifyOutbound) Search(ctx context.Context, query string, limit, offset int) (*spotify.SpotifySearchResponse, error) {
 	m.ctrl.T.Helper()

@@ -10,6 +10,7 @@ import (
 //go:generate mockgen -source=service.go -destination=service_mock.go -package=tracks
 type spotifyOutbound interface {
 	Search(ctx context.Context, query string, limit, offset int) (*spotify.SpotifySearchResponse, error)
+	GetRecommendation(ctx context.Context, limit int, trackID string) (*spotify.SpotifyRecommendationResponse, error)
 }
 
 type trackActivitesRepository interface {

@@ -10,10 +10,10 @@ import (
 	"github.com/amiulam/music-catalog/pkg/jwt"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
-	"go.uber.org/mock/gomock"
+	gomock "go.uber.org/mock/gomock"
 )
 
-func TestHandler_Search(t *testing.T) {
+func TestHandler_GetRecommendation(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 
@@ -21,18 +21,16 @@ func TestHandler_Search(t *testing.T) {
 
 	tests := []struct {
 		name               string
-		wantErr            bool
 		expectedStatusCode int
-		expectedBody       spotify.SearchResponse
+		expectedBody       *spotify.RecommendationResponse
 		mockFn             func()
+		wantErr            bool
 	}{
 		{
 			name:               "success",
-			wantErr:            false,
 			expectedStatusCode: 200,
-			expectedBody: spotify.SearchResponse{
-				Limit:  10,
-				Offset: 0,
+			wantErr:            false,
+			expectedBody: &spotify.RecommendationResponse{
 				Items: []spotify.SpotifyTrackObjects{
 					{
 						AlbumType:         "album",
@@ -55,11 +53,9 @@ func TestHandler_Search(t *testing.T) {
 						Name:              "Bohemian Rhapsody - Remastered 2011",
 					},
 				},
-				Total: 904,
 			},
 			mockFn: func() {
-				mockService.EXPECT().Search(gomock.Any(), "bohemian rhapsody", 10, 1, uint(1)).Return(&spotify.SearchResponse{
-					Limit: 10,
+				mockService.EXPECT().GetRecommendation(gomock.Any(), 10, "trackID", uint(1)).Return(&spotify.RecommendationResponse{
 					Items: []spotify.SpotifyTrackObjects{
 						{
 							AlbumType:         "album",
@@ -82,17 +78,16 @@ func TestHandler_Search(t *testing.T) {
 							Name:              "Bohemian Rhapsody - Remastered 2011",
 						},
 					},
-					Total: 904,
 				}, nil)
 			},
 		},
 		{
 			name:               "failed",
+			expectedStatusCode: http.StatusBadRequest,
 			wantErr:            true,
-			expectedStatusCode: 400,
-			expectedBody:       spotify.SearchResponse{},
+			expectedBody:       nil,
 			mockFn: func() {
-				mockService.EXPECT().Search(gomock.Any(), "bohemian rhapsody", 10, 1, uint(1)).Return(nil, assert.AnError)
+				mockService.EXPECT().GetRecommendation(gomock.Any(), 10, "trackID", uint(1)).Return(nil, assert.AnError)
 			},
 		},
 	}
@@ -108,7 +103,7 @@ func TestHandler_Search(t *testing.T) {
 
 			h.RegisterRoute()
 			w := httptest.NewRecorder()
-			endpoint := `/tracks/search?query=bohemian+rhapsody&pageSize=10&pageIndex=1`
+			endpoint := `/tracks/recommendations?limit=10&trackID=trackID`
 
 			req, err := http.NewRequest(http.MethodGet, endpoint, nil)
 			assert.NoError(t, err)
@@ -126,11 +121,11 @@ func TestHandler_Search(t *testing.T) {
 				res := w.Result()
 				defer res.Body.Close()
 
-				response := spotify.SearchResponse{}
+				response := spotify.RecommendationResponse{}
 				err := json.Unmarshal(w.Body.Bytes(), &response)
 				assert.NoError(t, err)
 
-				assert.Equal(t, tt.expectedBody, response)
+				assert.Equal(t, tt.expectedBody, &response)
 			}
 		})
 	}
